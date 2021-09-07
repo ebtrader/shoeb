@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 
 # https://github.com/gianlucamalato/machinelearning/blob/master/Support_and_resistance.ipynb
 
+# https://towardsdatascience.com/detection-of-price-support-and-resistance-levels-in-python-baedc44c34c9
+
 plt.rcParams['figure.figsize'] = [12, 7]
 
 plt.rc('font', size=14)
