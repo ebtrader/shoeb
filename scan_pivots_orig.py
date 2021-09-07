@@ -24,16 +24,16 @@ df = df.loc[:,['Date', 'Open', 'High', 'Low', 'Close']]
 print(df)
 
 def isSupport(df,i):
-  support = df['Low'][i] < df['Low'][i-1]  and df['Low'][i] < df['Low'][i+1] \
-  and df['Low'][i+1] < df['Low'][i+2] and df['Low'][i-1] < df['Low'][i-2]
+    support = df['Low'][i] < df['Low'][i-1]  and df['Low'][i] < df['Low'][i+1] \
+              and df['Low'][i+1] < df['Low'][i+2] and df['Low'][i-1] < df['Low'][i-2]
 
-  return support
+    return support
 
 def isResistance(df,i):
-  resistance = df['High'][i] > df['High'][i-1]  and df['High'][i] > df['High'][i+1] \
-  and df['High'][i+1] > df['High'][i+2] and df['High'][i-1] > df['High'][i-2]
+    resistance = df['High'][i] > df['High'][i-1]  and df['High'][i] > df['High'][i+1] \
+                 and df['High'][i+1] > df['High'][i+2] and df['High'][i-1] > df['High'][i-2]
 
-  return resistance
+    return resistance
 
 levels = []
 for i in range(2,df.shape[0]-2):
