@@ -2,6 +2,7 @@ import numpy as np
 from finta import TA
 import yfinance as yf
 import plotly.graph_objects as go
+import plotly.express as px
 
 
 import pandas as pd
@@ -12,7 +13,7 @@ from datetime import timedelta
 """ do change period 45 or 15 or 6 on weeklies - go back to the place of trend change"""
 """ WMA9 for 2 day bars with ATR 21 """
 
-ticker = "NQ=F"
+ticker = "ES=F"
 
 # data = yf.download(tickers = ticker, start='2019-01-04', end='2021-06-09')
 data = yf.download(tickers = ticker, period = "2y", interval = '1wk')
@@ -76,8 +77,56 @@ df['rolling_max'] = df['High'].rolling(window=4).max().fillna(0)
 
 df['neckline'] = np.where(df['sell'], df['rolling_max'], 0)
 
+# convert neckline to list
+
+neck_list = df['neckline'].tolist()
+
+neck_list = [i for i in neck_list if i != 0]
+
+print(neck_list)
+
+df['Date'] = df['Date'].astype(str)
+
+df['neck_date'] = np.where(df['neckline'], df['Date'], 0)
+
+neck_date_list = df['neck_date'].tolist()
+
+neck_date_list = [i for i in neck_date_list if i != 0]
+
+print(neck_date_list)
+
+# convert 2 columns into a dictionary
+
+# https://cmdlinetips.com/2021/04/convert-two-column-values-from-pandas-dataframe-to-a-dictionary/
+
+# https://stackoverflow.com/questions/66311549/how-do-i-loop-over-multiple-figures-in-plotly
+
+# https://stackoverflow.com/questions/60926439/plotly-add-traces-using-a-loop
+
 print(df)
 
-df.to_csv('switch.csv')
+# df.to_csv('switch.csv')
+
+# fig = px.scatter(x=neck_date_list, y=neck_list)
+# fig.show()
+
+fig1 = go.Figure(data=[go.Candlestick(x=df['Date'],
+                open=df['Open'],
+                high=df['High'],
+                low=df['Low'],
+                close=df['Close'])]
+
+)
+
+fig1.add_shape(type="rect",
+    x0=neck_date_list[0], y0=neck_list[0], x1=neck_date_list[1], y1=neck_list[0],
+    line=dict(
+        color="LightSeaGreen",
+        width=2,
+    ),
+   fillcolor="RoyalBlue", opacity=0.4,
+
+)
 
 
+fig1.show()
