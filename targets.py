@@ -16,7 +16,7 @@ from datetime import timedelta
 ticker = "ES=F"
 
 # data = yf.download(tickers = ticker, start='2019-01-04', end='2021-06-09')
-data = yf.download(tickers = ticker, period = "2y", interval = '1wk')
+data = yf.download(tickers = ticker, period = "2y", interval = '1d')
 
 # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
 # valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
@@ -25,6 +25,8 @@ data = yf.download(tickers = ticker, period = "2y", interval = '1wk')
 df = pd.DataFrame(data)
 
 df = df.reset_index()
+
+df['Date'] = df['Date'].astype(str)
 
 # print(df)
 
@@ -75,6 +77,16 @@ df['sell'] = df['sell'].astype(int)
 
 df['rolling_max'] = df['High'].rolling(window=4).max().fillna(0)
 
+df['roll_max_trigger'] = df['rolling_max'].eq(df['rolling_max'].shift())
+
+df['roll_max_trigger'] = df['roll_max_trigger'].astype(int)
+
+df['roll_max_date_bool'] = (df['roll_max_trigger'] == 0)
+
+df['roll_max_date'] = df['Date'].where(df['roll_max_date_bool'])
+
+df['roll_max_date'] = df['roll_max_date'].fillna(method='ffill')
+
 df['neckline'] = np.where(df['sell'], df['rolling_max'], 0)
 
 # convert neckline to list
@@ -85,15 +97,17 @@ neck_list = [i for i in neck_list if i != 0]
 
 print(neck_list)
 
-df['Date'] = df['Date'].astype(str)
+df['neck_date'] = np.where(df['neckline'], df['roll_max_date'], 0)
 
-df['neck_date'] = np.where(df['neckline'], df['Date'], 0)
+# https://stackoverflow.com/questions/36684013/extract-column-value-based-on-another-column-pandas-dataframe?rq=1
 
 neck_date_list = df['neck_date'].tolist()
 
 neck_date_list = [i for i in neck_date_list if i != 0]
 
 print(neck_date_list)
+
+total_runs = int(len(neck_date_list))
 
 # convert 2 columns into a dictionary
 
@@ -103,9 +117,11 @@ print(neck_date_list)
 
 # https://stackoverflow.com/questions/60926439/plotly-add-traces-using-a-loop
 
+# https://stackoverflow.com/questions/58493254/how-to-add-more-than-one-shape-with-loop-in-plotly
+
 print(df)
 
-# df.to_csv('switch.csv')
+df.to_csv('switch.csv')
 
 # fig = px.scatter(x=neck_date_list, y=neck_list)
 # fig.show()
@@ -118,15 +134,74 @@ fig1 = go.Figure(data=[go.Candlestick(x=df['Date'],
 
 )
 
-fig1.add_shape(type="rect",
-    x0=neck_date_list[0], y0=neck_list[0], x1=neck_date_list[1], y1=neck_list[0],
-    line=dict(
-        color="LightSeaGreen",
-        width=2,
-    ),
-   fillcolor="RoyalBlue", opacity=0.4,
-
-)
+for i in range(0, total_runs-1):
+    fig1.add_shape(type="line",
+        x0=neck_date_list[i], y0=neck_list[i], x1=neck_date_list[i+1], y1=neck_list[i],
+        line=dict(
+            color="LightSeaGreen",
+            width=2,
+        ),
+    )
+#
+# fig1.add_shape(type="line",
+#     x0=neck_date_list[1], y0=neck_list[1], x1=neck_date_list[2], y1=neck_list[1],
+#     line=dict(
+#         color="LightSeaGreen",
+#         width=2,
+#     ),
+#
+#
+# )
+#
+# fig1.add_shape(type="line",
+#     x0=neck_date_list[2], y0=neck_list[2], x1=neck_date_list[3], y1=neck_list[2],
+#     line=dict(
+#         color="LightSeaGreen",
+#         width=2,
+#     ),
+#
+#
+# )
+#
+# fig1.add_shape(type="line",
+#     x0=neck_date_list[3], y0=neck_list[3], x1=neck_date_list[4], y1=neck_list[3],
+#     line=dict(
+#         color="LightSeaGreen",
+#         width=2,
+#     ),
+#
+#
+# )
+#
+# fig1.add_shape(type="line",
+#     x0=neck_date_list[4], y0=neck_list[4], x1=neck_date_list[5], y1=neck_list[4],
+#     line=dict(
+#         color="LightSeaGreen",
+#         width=2,
+#     ),
+#
+#
+# )
+#
+# fig1.add_shape(type="line",
+#     x0=neck_date_list[5], y0=neck_list[5], x1=neck_date_list[6], y1=neck_list[5],
+#     line=dict(
+#         color="LightSeaGreen",
+#         width=2,
+#     ),
+#
+#
+# )
+#
+# fig1.add_shape(type="line",
+#     x0=neck_date_list[6], y0=neck_list[6], x1=neck_date_list[7], y1=neck_list[6],
+#     line=dict(
+#         color="LightSeaGreen",
+#         width=2,
+#     ),
+#
+#
+# )
 
 
 fig1.show()
