@@ -9,8 +9,8 @@ import pandas as pd
 
 from datetime import datetime
 
-ticker = "NQ=F"
-data = yf.download(tickers = ticker, start='1999-01-04', end='2001-12-31')
+ticker = "TQQQ"
+data = yf.download(tickers = ticker, start='2020-01-04', end='2021-12-27')
 # data = yf.download(tickers = ticker, period = "3y")
 
 # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
